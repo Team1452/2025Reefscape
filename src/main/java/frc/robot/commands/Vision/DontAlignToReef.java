@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.Vision;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 
-public class MoveToReef extends Command {
+public class DontAlignToReef extends Command {
   private final Drive drive;
   private final Vision vision;
   private final ProfiledPIDController angleController;
@@ -25,7 +25,7 @@ public class MoveToReef extends Command {
 
   private double targetError;
 
-  public MoveToReef(Drive drive, Vision vision) {
+  public DontAlignToReef(Drive drive, Vision vision) {
     this.drive = drive;
     this.vision = vision;
 
@@ -50,7 +50,7 @@ public class MoveToReef extends Command {
   }
 
   public void execute() {
-    vision.moveReady(true);
+    vision.setAlignToReef(false);
   }
 
   @Override

@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.Vision;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;

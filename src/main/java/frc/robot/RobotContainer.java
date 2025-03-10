@@ -27,14 +27,14 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AlignToCoral;
-import frc.robot.commands.AlignToReef;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.MoveToReef;
 import frc.robot.commands.MultiCommands;
 import frc.robot.commands.ShoulderCommands;
+import frc.robot.commands.Vision.AlignToCoral;
+import frc.robot.commands.Vision.AlignToReef;
+import frc.robot.commands.Vision.MoveToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -181,21 +181,18 @@ public class RobotContainer {
 
   private void configureSubsystemLogic() {
     Trigger elevatorLimitSwtichTrigger = new Trigger(() -> elevator.eLimitSwitch());
-
     // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we need to
     // move the shoulder up.
     Trigger shoulderCrashTrigger =
         new Trigger(
             () ->
                 shoulder.getAngle() < 1 && elevator.getHeight() < ElevatorConstants.shoulderLength);
-
     // If the REQUESTED HEIGHT of the elevator is lower than a height where it would hit the intake,
     // then we need to move the intake out of the way (if its ACTUALLY IN)
     Trigger elevatorLoweringTrigger =
         new Trigger(
             () ->
                 elevator.getRHeight() < ElevatorConstants.intakeHeight && !intake.getIntakeOpen());
-
     // If the REQUESTED ANGLE of the intake is in, and the ACTUAL HEIGHT of the elevator is too low,
     // then we need to move the elevator up out of the way.
     Trigger elevatorUpTrigger =
@@ -203,7 +200,6 @@ public class RobotContainer {
             () ->
                 elevator.getHeight() < ElevatorConstants.intakeHeight
                     && !intake.getRIntakeOpen()); // for shoulder UP cases
-
     shoulderCrashTrigger.onTrue(
         new InstantCommand(
             () -> shoulder.setRAngle(0.25),
@@ -214,7 +210,7 @@ public class RobotContainer {
             intake)); // Move the intake to a safe position.
     elevatorUpTrigger.onTrue(
         new InstantCommand(
-            () -> elevator.setRHeight(ElevatorConstants.intakeHeight + 2),
+            () -> elevator.setRHeight(ElevatorConstants.intakeHeight + 3),
             elevator)); // Move the elevator up out of the way.
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)); // reset the encoder.
@@ -242,9 +238,6 @@ public class RobotContainer {
     fightBox.button(5).onTrue(ElevatorCommands.goToTier(elevator, 4));
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
-
-    // controller.leftBumper().onTrue (IntakeCommands.runIntakeRoutine(intake));
-    // Score on right bumper
 
     controller.a().onTrue(IntakeCommands.scoreL1(intake));
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
