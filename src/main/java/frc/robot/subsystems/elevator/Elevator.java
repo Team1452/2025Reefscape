@@ -27,7 +27,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean nearRPosition() {
-    return MathUtil.isNear(elevatorRHeight, inputs.height, 0.05);
+    return MathUtil.isNear(elevatorRHeight, inputs.height, ElevatorConstants.kElevatorTolerance);
+  }
+
+  public boolean nearPosition(double height) {
+    return MathUtil.isNear(height, inputs.height, ElevatorConstants.kElevatorTolerance);
   }
 
   public void adjustRHeight(double height) {

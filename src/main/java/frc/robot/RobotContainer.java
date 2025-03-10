@@ -181,18 +181,21 @@ public class RobotContainer {
 
   private void configureSubsystemLogic() {
     Trigger elevatorLimitSwtichTrigger = new Trigger(() -> elevator.eLimitSwitch());
+
     // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we need to
     // move the shoulder up.
     Trigger shoulderCrashTrigger =
         new Trigger(
             () ->
-                shoulder.getAngle() < 1 && elevator.getHeight() < ElevatorConstants.shoulderLength);
+                shoulder.getAngle() < 1 && elevator.getHeight() < (ElevatorConstants.shoulderLength)*Math.cos(Math.PI*2*(shoulder.getAngle()-0.75)) );
+
     // If the REQUESTED HEIGHT of the elevator is lower than a height where it would hit the intake,
     // then we need to move the intake out of the way (if its ACTUALLY IN)
     Trigger elevatorLoweringTrigger =
         new Trigger(
             () ->
                 elevator.getRHeight() < ElevatorConstants.intakeHeight && !intake.getIntakeOpen());
+
     // If the REQUESTED ANGLE of the intake is in, and the ACTUAL HEIGHT of the elevator is too low,
     // then we need to move the elevator up out of the way.
     Trigger elevatorUpTrigger =
@@ -200,6 +203,7 @@ public class RobotContainer {
             () ->
                 elevator.getHeight() < ElevatorConstants.intakeHeight
                     && !intake.getRIntakeOpen()); // for shoulder UP cases
+                    
     shoulderCrashTrigger.onTrue(
         new InstantCommand(
             () -> shoulder.setRAngle(0.25),

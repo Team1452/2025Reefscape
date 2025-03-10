@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.shoulder.Shoulder;
 
 public class MultiCommands {
@@ -13,26 +14,20 @@ public class MultiCommands {
   public static Command handOff(Intake intake, Elevator elevator, Shoulder shoulder) {
     return Commands.sequence(
         Commands.parallel(
-            ElevatorCommands.moveElevatorTo(
-                elevator, ElevatorConstants.kElevatorHeights[0] + 5), // move the elevator up.
-            ShoulderCommands.moveShoulderTo(shoulder, 0.75) // Move shoulder down
-            ),
-        ElevatorCommands.moveElevatorTo(
-            elevator,
-            ElevatorConstants.kElevatorHeights[0]
-                + 1), // move the elevator to right above handoff height.
+            ElevatorCommands.moveElevatorTo(elevator, ElevatorConstants.kElevatorHeights[0] + 5), // move the elevator up.
+            Commands.waitUntil(()->elevator.getHeight() > ElevatorConstants.kElevatorHeights[0])
+                .andThen(ShoulderCommands.moveShoulderTo(shoulder, 0.75)) ////Wait until the elevator is high enough up to start rotating the arm down.
+        ),
         Commands.parallel(
-            IntakeCommands.spitOut(intake, true), // spit out the coral
-            ElevatorCommands.moveElevatorTo(
-                elevator, ElevatorConstants.kElevatorHeights[0]) // handoff
-            ),
-        ElevatorCommands.moveElevatorTo(
-            elevator, ElevatorConstants.kElevatorHeights[0] + 1), // move back up
-        ShoulderCommands.moveShoulderTo(shoulder, 0.25), // rotate shoulder back up
-        ElevatorCommands.moveElevatorTo(
-            elevator,
-            ElevatorConstants.intakeHeight
-                + 2) // move the elevator down to get closer to scoring pos.
-        );
+            ElevatorCommands.moveElevatorTo(elevator, ElevatorConstants.kElevatorHeights[0]), //Move the elevator down to handoff height.
+            Commands.waitUntil(()->elevator.getHeight()<ElevatorConstants.kElevatorHeights[0]+3)
+                .andThen(IntakeCommands.spitOut(intake, true)) //When the elevator is less than 1 rotation away from being at the handoff, bubble up the coral.
+        ),
+        ElevatorCommands.moveElevatorTo(elevator, ElevatorConstants.kElevatorHeights[0]+3), //Move the elevator up slightly so we can rotate the shoulder.
+        ShoulderCommands.moveShoulderTo(shoulder, 0.25), //Move the shoulder up
+        IntakeCommands.moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle), //Move the intake out of the way.
+        ElevatorCommands.moveElevatorTo(elevator, ElevatorConstants.kElevatorHeights[1]) //Move the elevator back down to 0. (Triggers should handle the collisions and automatically move the intake out of the way)
+    
+    );
   }
 }

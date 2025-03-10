@@ -64,8 +64,8 @@ public class Intake extends SubsystemBase {
     io.setSuckerVelocity(IntakeConstants.intakeSuckSpeed);
   }
 
-  public void spitSucker() {
-    io.setSuckerVelocity(-IntakeConstants.intakeSuckSpeed);
+  public void spitSucker(boolean bubble) {
+    io.setSuckerVelocity(-IntakeConstants.intakeSuckSpeed /(bubble ? 2 : 1)); //if "bubbling", spin slower.
   }
 
   public void stopSucker() {
