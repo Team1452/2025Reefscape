@@ -28,7 +28,7 @@ public class IntakeCommands {
 
   public static Command spitOut(Intake intake, boolean bubble) {
     return Commands.sequence(
-        new InstantCommand(()->intake.spitSucker(bubble), intake), // Spit it out
+        new InstantCommand(() -> intake.spitSucker(bubble), intake), // Spit it out
         Commands.waitSeconds(bubble ? 0.25 : 0.5), // for half a second (or in bubble mode, for less time)
         new InstantCommand(intake::stopSucker, intake) // quit it.
         );
@@ -36,7 +36,7 @@ public class IntakeCommands {
 
   public static Command intakeCoralAndStow(Intake intake) {
     return Commands.sequence(
-        new InstantCommand(() -> intake.setIntakeAngle(IntakeConstants.intakeIntakeAngle), intake),
+        IntakeCommands.moveIntakeTo(intake, IntakeConstants.intakeIntakeAngle),
         suckAndHold(intake),
         new InstantCommand(
             () -> intake.setIntakeAngle(IntakeConstants.intakeHandOffAngle), intake));

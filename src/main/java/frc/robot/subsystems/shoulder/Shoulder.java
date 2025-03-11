@@ -7,7 +7,7 @@ import org.littletonrobotics.junction.Logger;
 public class Shoulder extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ShoulderIO io;
-  private double shoulderRAngle = 0.275;
+  private double shoulderRAngle = 0.264;
   // Inputs from the elevator hardware.
   private final ShoulderIOInputsAutoLogged inputs = new ShoulderIOInputsAutoLogged();
   /**

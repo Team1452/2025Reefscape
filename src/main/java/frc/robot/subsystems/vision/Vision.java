@@ -20,6 +20,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -269,6 +270,7 @@ public class Vision extends SubsystemBase {
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                     new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
             alignToReef = false;
+            moveReadyness = true;
           }
         }
       } else {
@@ -303,9 +305,9 @@ public class Vision extends SubsystemBase {
 
           double targetRange =
               PhotonUtils.calculateDistanceToTargetMeters(
-                  0.254, // Measured with a tape measure, or in CAD.
-                  0.22225, // From 2024 game manual for ID 7
-                  Units.degreesToRadians(0), // Measured with a protractor, or in CAD.
+                  0.84, // Measured with a tape measure,  or in CAD.
+                  0.29, // From 2024 game manual for ID 7
+                  Units.degreesToRadians(-15), // Measured with a protractor, or in CAD.
                   Units.degreesToRadians(targetError));
 
           System.out.println(targetRange);
@@ -320,14 +322,22 @@ public class Vision extends SubsystemBase {
           // BooleanSupplier condition = () -> !driveReady;
 
           if (driveReady == true) {
+            drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
             drive.runVelocity(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                    new ChassisSpeeds(0, 1, 0), drive.getRotation()));
-            System.out.println("COMMAND OVER");
+                    new ChassisSpeeds(0, -1, 0), drive.getRotation()));
           } else {
-            drive.runVelocity(
-                ChassisSpeeds.fromFieldRelativeSpeeds(
-                    new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
+
+            if (target.getYaw() < Units.radiansToDegrees(Math.atan(0.15 / targetRange))) {
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      new ChassisSpeeds(0.5, 0.0, 0), drive.getRotation()));
+            } else {
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
+            }
+
             moveReadyness = false;
           }
         }
@@ -345,16 +355,8 @@ public class Vision extends SubsystemBase {
     moveReadyness = j;
   }
 
-  public boolean getMoveReady() {
-    return moveReadyness;
-  }
-
   public void setAlignToReef(boolean j) {
     alignToReef = j;
-  }
-
-  public boolean getAlignToReef() {
-    return alignToReef;
   }
 
   public boolean getDriveStatus() {
