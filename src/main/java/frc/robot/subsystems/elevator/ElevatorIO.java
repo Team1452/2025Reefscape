@@ -13,5 +13,7 @@ public interface ElevatorIO {
 
   public default void updateInputs(ElevatorIOInputs inputs) {}
 
+  public default void setSpeed(double setpoint) {}
+
   public default void resetEncoder() {}
 }

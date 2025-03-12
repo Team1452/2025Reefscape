@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -19,6 +20,7 @@ public class ElevatorIOSpark implements ElevatorIO {
   private final SparkMaxConfig m_twoConfig;
   private final SparkClosedLoopController m_oneController;
   private final DigitalInput elevatorlimitSwtich;
+   private final RelativeEncoder elevatorRelativeEncoder;
 
   public ElevatorIOSpark() {
     elevatorlimitSwtich = new DigitalInput(1);
@@ -56,17 +58,23 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     SparkUtil.tryUntilOk(m_one, 20, () -> m_one.getEncoder().setPosition(0));
     m_oneController = m_one.getClosedLoopController();
+    elevatorRelativeEncoder = m_one.getEncoder();
   }
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     inputs.elevatorlimitSwtich = elevatorlimitSwtich.get();
-    inputs.height = m_one.getEncoder().getPosition();
+    inputs.height = elevatorRelativeEncoder.getPosition();
   }
 
   @Override
   public void setHeight(double setpoint) {
     m_oneController.setReference(setpoint, ControlType.kPosition);
+  }
+
+  @Override
+  public void setSpeed(double setpoint) {
+    m_one.set(setpoint);
   }
 
   @Override

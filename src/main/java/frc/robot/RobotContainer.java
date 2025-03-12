@@ -187,7 +187,10 @@ public class RobotContainer {
     Trigger shoulderCrashTrigger =
         new Trigger(
             () ->
-                shoulder.getAngle() < 1 && elevator.getHeight() < (ElevatorConstants.shoulderLength)*Math.cos(Math.PI*2*(shoulder.getAngle()-0.75)) );
+                shoulder.getAngle() < 1
+                    && elevator.getHeight()
+                        < (ElevatorConstants.shoulderLength)
+                            * Math.cos(Math.PI * 2 * (shoulder.getAngle() - 0.75)));
 
     // If the REQUESTED HEIGHT of the elevator is lower than a height where it would hit the intake,
     // then we need to move the intake out of the way (if its ACTUALLY IN)
@@ -203,7 +206,7 @@ public class RobotContainer {
             () ->
                 elevator.getHeight() < ElevatorConstants.intakeHeight
                     && !intake.getRIntakeOpen()); // for shoulder UP cases
-                    
+
     shoulderCrashTrigger.onTrue(
         new InstantCommand(
             () -> shoulder.setRAngle(0.25),
@@ -243,7 +246,7 @@ public class RobotContainer {
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
 
-    controller.a().onTrue(IntakeCommands.scoreL1(intake));
+    controller.a().onTrue(Commands.run(() -> elevator.setMotorSpeed(0.3)));
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
     controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
