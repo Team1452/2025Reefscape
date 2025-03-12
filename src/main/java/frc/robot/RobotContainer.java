@@ -208,19 +208,24 @@ public class RobotContainer {
                     && !intake.getRIntakeOpen()); // for shoulder UP cases
 
     shoulderCrashTrigger.onTrue(
-        new InstantCommand(
-            () -> shoulder.setRAngle(0.25),
-            shoulder)); // move the shoulder straight up to avoid crashing into the robot.
+        new InstantCommand(() -> shoulder.setRAngle(0.25), shoulder)
+            .andThen(
+                Commands.print(
+                    "Shoulder Crash Trigger"))); // move the shoulder straight up to avoid crashing
+    // into the robot.
     elevatorLoweringTrigger.onTrue(
         new InstantCommand(
-            () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle + 1),
-            intake)); // Move the intake to a safe position.
+                () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle + 1), intake)
+            .andThen(
+                Commands.print(
+                    "Elevator Lowering Trigger"))); // Move the intake to a safe position.
     elevatorUpTrigger.onTrue(
-        new InstantCommand(
-            () -> elevator.setRHeight(ElevatorConstants.intakeHeight + 3),
-            elevator)); // Move the elevator up out of the way.
+        new InstantCommand(() -> elevator.setRHeight(ElevatorConstants.intakeHeight + 3), elevator)
+            .andThen(
+                Commands.print("Elevator Up Trigger"))); // Move the elevator up out of the way.
     elevatorLimitSwtichTrigger.onTrue(
-        new InstantCommand(elevator::resetEncoder)); // reset the encoder.
+        new InstantCommand(elevator::resetEncoder)
+            .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
   }
 
   private void configureButtonBindings() {

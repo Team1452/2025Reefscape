@@ -4,13 +4,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.AbsoluteEncoder;
-
 public class Elevator extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ElevatorIO io;
   private double elevatorRHeight = 0;
- 
+
   // Inputs from the elevator hardware.
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   /**

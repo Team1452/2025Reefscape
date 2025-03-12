@@ -20,7 +20,7 @@ public class ElevatorIOSpark implements ElevatorIO {
   private final SparkMaxConfig m_twoConfig;
   private final SparkClosedLoopController m_oneController;
   private final DigitalInput elevatorlimitSwtich;
-   private final RelativeEncoder elevatorRelativeEncoder;
+  private final RelativeEncoder elevatorRelativeEncoder;
 
   public ElevatorIOSpark() {
     elevatorlimitSwtich = new DigitalInput(1);
