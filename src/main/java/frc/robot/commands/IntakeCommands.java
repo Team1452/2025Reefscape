@@ -37,7 +37,7 @@ public class IntakeCommands {
 
   public static Command intakeCoralAndStow(Intake intake) {
     return Commands.sequence(
-        new InstantCommand(() -> intake.setIntakeAngle(IntakeConstants.intakeIntakeAngle), intake),
+        IntakeCommands.moveIntakeTo(intake, IntakeConstants.intakeIntakeAngle),
         suckAndHold(intake),
         new InstantCommand(
             () -> intake.setIntakeAngle(IntakeConstants.intakeHandOffAngle), intake));

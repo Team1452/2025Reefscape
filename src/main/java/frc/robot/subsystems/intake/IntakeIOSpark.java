@@ -36,7 +36,7 @@ public class IntakeIOSpark implements IntakeIO {
             IntakeConstants.kIntakeGains[2],
             IntakeConstants.kIntakeGains[3])
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .outputRange(-0.5, 0.5)
+        .outputRange(-1, 1)
         .positionWrappingEnabled(false);
     suckerConfig.inverted(IntakeConstants.reversedSucker).idleMode(IdleMode.kBrake);
     SparkUtil.tryUntilOk(
