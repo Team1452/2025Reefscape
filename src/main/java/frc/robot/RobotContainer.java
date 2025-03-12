@@ -251,7 +251,7 @@ public class RobotContainer {
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
 
-    controller.a().onTrue(Commands.run(() -> elevator.setMotorSpeed(0.3)));
+    controller.a().onTrue(Commands.runOnce(() -> elevator.setMotorSpeed(0.3)));
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
     controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
