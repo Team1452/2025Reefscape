@@ -79,6 +79,6 @@ public class ElevatorIOSpark implements ElevatorIO {
 
   @Override
   public void resetEncoder() {
-    SparkUtil.tryUntilOk(m_one, 20, () -> m_one.getEncoder().setPosition(0));
+    SparkUtil.tryUntilOk(m_one, 20, () ->elevatorRelativeEncoder.setPosition(0));
   }
 }

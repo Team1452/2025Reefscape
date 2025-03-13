@@ -21,8 +21,10 @@ public class Shoulder extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs); // Refresh the inputs.
     io.setShoulderAngle(shoulderRAngle);
-    Logger.processInputs("Shoulder", inputs);
-    Logger.recordOutput("Shoulder/ShoulderRAngle", shoulderRAngle);
+    Logger.processInputs("ElevatorShoulder", inputs);
+    Logger.recordOutput("ElevatorShoulder/AbsShoulderAngle", inputs.shoulderAngle);
+    Logger.recordOutput("ElevatorShoulder/InternalShoulderAngle", inputs.internalAngle);
+    Logger.recordOutput("ElevatorShoulder/ShoulderRAngle", shoulderRAngle);
   }
 
   public void setRAngle(double angle) {

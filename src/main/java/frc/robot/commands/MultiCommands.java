@@ -11,6 +11,14 @@ import frc.robot.subsystems.shoulder.Shoulder;
 public class MultiCommands {
   private MultiCommands() {}
 
+  public static Command maintainAngles(Intake intake, Elevator elevator, Shoulder shoulder) {
+    return Commands.run(() -> {
+        intake.setIntakeAngle(intake.getIntakeAngle());
+        elevator.setRHeight(elevator.getHeight());
+        shoulder.setRAngle(shoulder.getAngle());
+    }).ignoringDisable(true);
+  }
+
   public static Command handOff(Intake intake, Elevator elevator, Shoulder shoulder) {
     return Commands.sequence(
         Commands.parallel(

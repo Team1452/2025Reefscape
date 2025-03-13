@@ -35,6 +35,9 @@ public class Intake extends SubsystemBase {
   public boolean nearRPosition() {
     return MathUtil.isNear(intakeRAngle, inputs.intakeAngle, 0.4);
   }
+  public boolean greaterThanToleranceMinusRPosition(double tolerance) {
+    return inputs.intakeAngle > intakeRAngle - tolerance;
+  }
 
   public double getIntakeAngle() {
     return inputs.intakeAngle;
