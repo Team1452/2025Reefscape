@@ -40,8 +40,7 @@ public class Shoulder extends SubsystemBase {
   }
 
   public boolean nearRPosition() {
-    return MathUtil.isNear(
-        shoulderRAngle, inputs.shoulderAngle, 0.008); // about 3 degrees tolerance.
+    return MathUtil.isNear(shoulderRAngle, inputs.shoulderAngle, 0.015);
   }
 
   public void adjustRAngle(double angle) {

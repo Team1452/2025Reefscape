@@ -12,8 +12,10 @@ public class IntakeCommands {
   public static Command moveIntakeTo(Intake intake, double angle) {
     return Commands.run(() -> intake.setIntakeAngle(angle), intake).until(intake::nearRPosition);
   }
+
   public static Command goOut(Intake intake) {
-    return Commands.run(() -> intake.setIntakeAngle(IntakeConstants.intakeIntakeAngle), intake).until(()->intake.greaterThan(IntakeConstants.intakeIntakeAngle - 2));
+    return Commands.run(() -> intake.setIntakeAngle(IntakeConstants.intakeIntakeAngle), intake)
+        .until(() -> intake.greaterThan(IntakeConstants.intakeIntakeAngle - 1));
   }
 
   public static Command suckAndHold(Intake intake) {
