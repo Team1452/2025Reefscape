@@ -36,7 +36,7 @@ public class ElevatorIOSpark implements ElevatorIO {
         .maxOutput(0.45) // Limit speed
         .minOutput(-0.45) // Limit speed
         .positionWrappingEnabled(false)
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder) // This is probably the source of our issues. Was kAbsoluteEncoder. (Would cause a sensor fault the motors not to move with PID)
         .pidf(
             ElevatorConstants.kElevatorGains[0],
             ElevatorConstants.kElevatorGains[1],

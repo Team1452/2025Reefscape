@@ -7,13 +7,13 @@ import org.littletonrobotics.junction.Logger;
 public class Elevator extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ElevatorIO io;
-  private double elevatorRHeight = 0;
+  private static double elevatorRHeight = 0;
 
   // Inputs from the elevator hardware.
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   /**
    * @param io The interfce)
-   */
+   */ 
   public Elevator(ElevatorIO io) {
     this.io = io;
   }
@@ -21,7 +21,7 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    io.setHeight(MathUtil.clamp(elevatorRHeight, 0, ElevatorConstants.maxHeight));
+    io.setHeight(elevatorRHeight);
     Logger.processInputs("Elevator", inputs);
     Logger.recordOutput("Elevator/ElevatorRHeight", elevatorRHeight);
     Logger.recordOutput("Elevator/ElevatorHeight", inputs.height);
