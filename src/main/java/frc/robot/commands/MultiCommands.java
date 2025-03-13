@@ -23,7 +23,7 @@ public class MultiCommands {
     return Commands.sequence(
         Commands.parallel(
             ElevatorCommands.moveElevatorTo(
-                elevator, ElevatorConstants.kElevatorHeights[0] + 5), // move the elevator up.
+                elevator, ElevatorConstants.kElevatorHeights[0] + 10), // move the elevator up.
             Commands.waitUntil(() -> elevator.getHeight() > ElevatorConstants.kElevatorHeights[0])
                 .andThen(
                     ShoulderCommands.moveShoulderTo(
@@ -35,25 +35,21 @@ public class MultiCommands {
             ElevatorCommands.moveElevatorTo(
                 elevator,
                 ElevatorConstants.kElevatorHeights[0]), // Move the elevator down to handoff height.
-            Commands.waitUntil(
-                    () -> elevator.getHeight() < ElevatorConstants.kElevatorHeights[0] + 3)
-                .andThen(
-                    IntakeCommands.spitOut(
-                        intake,
-                        true)) // When the elevator is less than 3 rotations away from being at the
+            IntakeCommands.spitOut(
+                intake, true) // When the elevator is less than 3 rotations away from being at the
             // handoff, bubble up the coral.
             ),
         ElevatorCommands.moveElevatorTo(
             elevator,
             ElevatorConstants.kElevatorHeights[0]
-                + 3), // Move the elevator up slightly so we can rotate the shoulder.
+                + 8), // Move the elevator up slightly so we can rotate the shoulder.
         ShoulderCommands.moveShoulderTo(shoulder, 0.25), // Move the shoulder up
         IntakeCommands.moveIntakeTo(
-            intake, IntakeConstants.intakeHandOffAngle), // Move the intake out of the way.
+            intake, IntakeConstants.intakeLevelOneAngle), // Move the intake out of the way.
         ElevatorCommands.moveElevatorTo(
             elevator,
-            ElevatorConstants.kElevatorHeights[
-                1]) // Move the elevator back down to 0. (Triggers should handle the collisions and
+            ElevatorConstants.kElevatorHeights[1]
+                + 5) // Move the elevator back down to 0. (Triggers should handle the collisions and
         // automatically move the intake out of the way)
         );
   }

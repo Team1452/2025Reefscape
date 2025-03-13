@@ -4,7 +4,7 @@ public final class IntakeConstants {
   public static final int IntakeID = 50;
   public static final int RollerID = 11;
   public static final double intakeSuckSpeed = 0.4;
-  public static final double intakeHandOffAngle = 0;
+  public static final double intakeHandOffAngle = -2.5;
   public static final double intakeIntakeAngle = 28.5;
   public static final double intakeLevelOneAngle = 7.15;
   public static final double intakeStartUpAngle = 2.93;
