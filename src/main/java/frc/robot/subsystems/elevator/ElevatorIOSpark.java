@@ -30,13 +30,17 @@ public class ElevatorIOSpark implements ElevatorIO {
     m_oneConfig = new SparkMaxConfig();
     m_twoConfig = new SparkMaxConfig();
     m_oneConfig
+        .closedLoopRampRate(0.25)
         .inverted(true)
         .idleMode(IdleMode.kBrake)
         .closedLoop
         .maxOutput(0.45) // Limit speed
         .minOutput(-0.45) // Limit speed
         .positionWrappingEnabled(false)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder) // This is probably the source of our issues. Was kAbsoluteEncoder. (Would cause a sensor fault the motors not to move with PID)
+        .feedbackSensor(
+            FeedbackSensor.kPrimaryEncoder) // This is probably the source of our issues. Was
+        // kAbsoluteEncoder. (Would cause a sensor fault the motors not to
+        // move with PID)
         .pidf(
             ElevatorConstants.kElevatorGains[0],
             ElevatorConstants.kElevatorGains[1],
