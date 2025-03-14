@@ -5,21 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "AlignToReefTag"
+            "pathName": "MiddleRed"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "MoveToReef"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "PlaceOnTier4"
+            "name": "ScoreL1"
           }
         }
       ]

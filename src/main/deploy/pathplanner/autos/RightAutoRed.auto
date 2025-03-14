@@ -9,6 +9,12 @@
           "data": {
             "pathName": "RightPathRed"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ScoreL1"
+          }
         }
       ]
     }

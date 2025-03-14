@@ -28,6 +28,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
@@ -49,7 +50,11 @@ public class Vision extends SubsystemBase {
 
   public boolean alignToReef = false;
   public boolean moveReadyness = false;
+  public boolean branchReadyL = false;
+  public boolean branchReadyR = false;
   public boolean driveReady = false;
+
+  private static final double distanceFromTag = 0.5; // meters
 
   private static final double ANGLE_KP = 10.0;
   private static final double ANGLE_KD = 0.0;
@@ -100,6 +105,7 @@ public class Vision extends SubsystemBase {
       Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
 
+    // TODO: Memory Usage?
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
     List<Pose3d> allRobotPoses = new LinkedList<>();
@@ -112,6 +118,7 @@ public class Vision extends SubsystemBase {
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
 
+      // TODO: Memory Usage?
       // Initialize logging values
       List<Pose3d> tagPoses = new LinkedList<>();
       List<Pose3d> robotPoses = new LinkedList<>();
@@ -254,28 +261,28 @@ public class Vision extends SubsystemBase {
 
           if (Math.abs(c0 - c1) > 2 && Math.abs(c2 - c3) > 2) {
             if (c1 - c0 < 0 && c2 - c3 < 0) {
-              drive.runVelocity(
+              Commands.run(() -> drive.runVelocity(
                   ChassisSpeeds.fromFieldRelativeSpeeds(
-                      new ChassisSpeeds(-1, 0.0, omega), drive.getRotation()));
+                      new ChassisSpeeds(-1, 0.0, omega), drive.getRotation())));
             } else if (c1 - c0 > 0 && c2 - c3 > 0) {
-              drive.runVelocity(
+              Commands.run(()->drive.runVelocity(
                   ChassisSpeeds.fromFieldRelativeSpeeds(
-                      new ChassisSpeeds(1, 0.0, omega), drive.getRotation()));
+                      new ChassisSpeeds(1, 0.0, omega), drive.getRotation())));
             }
           } else {
             System.out.println("PARALLE = TRUE");
-            drive.runVelocity(
+            Commands.runOnce( () -> drive.runVelocity(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                    new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())));
             alignToReef = false;
             moveReadyness = true;
           }
         }
       } else {
         alignToReef = false;
-        drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
+        Commands.runOnce( () -> drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())));
       }
     }
 
@@ -310,7 +317,7 @@ public class Vision extends SubsystemBase {
 
           System.out.println(targetRange);
 
-          if (Math.abs(targetRange) > 0.3) {
+          if (Math.abs(targetRange) > distanceFromTag) {
             driveReady = true;
           } else {
             driveReady = false;
@@ -321,30 +328,61 @@ public class Vision extends SubsystemBase {
 
           if (driveReady == true) {
             drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-            drive.runVelocity(
+            Commands.run( () -> drive.runVelocity(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                    new ChassisSpeeds(0, -1, 0), drive.getRotation()));
+                    new ChassisSpeeds(0, -1, 0), drive.getRotation())));
           } else {
-
-            if (target.getYaw() < Units.radiansToDegrees(Math.atan(0.15 / targetRange))) {
-              drive.runVelocity(
-                  ChassisSpeeds.fromFieldRelativeSpeeds(
-                      new ChassisSpeeds(0.5, 0.0, 0), drive.getRotation()));
-            } else {
-              drive.runVelocity(
-                  ChassisSpeeds.fromFieldRelativeSpeeds(
-                      new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
-            }
-
+            Commands.runOnce( () -> drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())));
+            branchReadyR = true;
             moveReadyness = false;
           }
         }
       } else {
-        drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                new ChassisSpeeds(0, 0.0, 0), drive.getRotation()));
+        Commands.runOnce( () -> drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())));
 
         moveReadyness = false;
+      }
+    }
+
+    if (branchReadyR == true) {
+
+      if (result.hasTargets() == true) {
+
+        PhotonTrackedTarget target = result.getBestTarget();
+
+        if (target.getYaw() < Units.radiansToDegrees(Math.atan(0.15 / distanceFromTag))) {
+          Commands.run( () -> drive.runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  new ChassisSpeeds(0.5, 0.0, 0), drive.getRotation())));
+        } else {
+          Commands.runOnce(() -> drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())), drive);
+          branchReadyR = false;
+        }
+      }
+    }
+
+    if (branchReadyL == true) {
+
+      if (result.hasTargets() == true) {
+
+        PhotonTrackedTarget target = result.getBestTarget();
+
+        if (target.getYaw() > (Units.radiansToDegrees(Math.atan(0.15 / distanceFromTag)) * -1)) {
+          Commands.run ( () -> drive.runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  new ChassisSpeeds(-0.5, 0.0, 0), drive.getRotation())));
+        } else {
+          Commands.runOnce(() -> drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, 0, 0), drive.getRotation())), drive);
+          branchReadyL = false;
+        }
       }
     }
   }
@@ -355,6 +393,14 @@ public class Vision extends SubsystemBase {
 
   public void setAlignToReef(boolean j) {
     alignToReef = j;
+  }
+
+  public void setBranchReadyRight(boolean j) {
+    branchReadyR = j;
+  }
+
+  public void setBranchReadyLeft(boolean j) {
+    branchReadyL = j;
   }
 
   public boolean getDriveStatus() {
