@@ -42,7 +42,6 @@ import org.photonvision.targeting.TargetCorner;
 
 public class Vision extends SubsystemBase {
   // private final Drive drive;
-  private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -69,9 +68,8 @@ public class Vision extends SubsystemBase {
           ANGLE_KD,
           new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
 
-  public Vision(Drive drive, VisionConsumer consumer, VisionIO... io) {
+  public Vision(Drive drive, VisionIO... io) {
     this.drive = drive;
-    this.consumer = consumer;
     this.io = io;
 
     // Initialize inputs
@@ -177,10 +175,7 @@ public class Vision extends SubsystemBase {
         }
 
         // Send vision observation
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        
       }
 
       // Log camera datadata
@@ -407,11 +402,5 @@ public class Vision extends SubsystemBase {
     return driveReady;
   }
 
-  @FunctionalInterface
-  public static interface VisionConsumer {
-    public void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs);
-  }
+
 }
