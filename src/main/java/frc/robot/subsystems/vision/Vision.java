@@ -252,17 +252,13 @@ public class Vision extends SubsystemBase {
 
           if (Math.abs(c0 - c1) > 2 && Math.abs(c2 - c3) > 2) {
             if (c1 - c0 < 0 && c2 - c3 < 0) {
-              Commands.run(
-                  () ->
-                      drive.runVelocity(
-                          ChassisSpeeds.fromFieldRelativeSpeeds(
-                              new ChassisSpeeds(-1, 0.0, omega), drive.getRotation())));
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      new ChassisSpeeds(-1, 0.0, omega), drive.getRotation()));
             } else if (c1 - c0 > 0 && c2 - c3 > 0) {
-              Commands.run(
-                  () ->
-                      drive.runVelocity(
-                          ChassisSpeeds.fromFieldRelativeSpeeds(
-                              new ChassisSpeeds(1, 0.0, omega), drive.getRotation())));
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      new ChassisSpeeds(1, 0.0, omega), drive.getRotation()));
             }
           } else {
             System.out.println("PARALLE = TRUE");
@@ -270,7 +266,8 @@ public class Vision extends SubsystemBase {
                 () ->
                     drive.runVelocity(
                         ChassisSpeeds.fromFieldRelativeSpeeds(
-                            new ChassisSpeeds(0, 0, 0), drive.getRotation())));
+                            new ChassisSpeeds(0, 0, 0), drive.getRotation())),
+                drive);
             alignToReef = false;
             moveReadyness = true;
           }
@@ -281,7 +278,8 @@ public class Vision extends SubsystemBase {
             () ->
                 drive.runVelocity(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
-                        new ChassisSpeeds(0, 0, 0), drive.getRotation())));
+                        new ChassisSpeeds(0, 0, 0), drive.getRotation())),
+            drive);
       }
     }
 
@@ -327,17 +325,16 @@ public class Vision extends SubsystemBase {
 
           if (driveReady == true) {
             drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-            Commands.run(
-                () ->
-                    drive.runVelocity(
-                        ChassisSpeeds.fromFieldRelativeSpeeds(
-                            new ChassisSpeeds(0, -1, 0), drive.getRotation())));
+            drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    new ChassisSpeeds(0, -1, 0), drive.getRotation()));
           } else {
             Commands.runOnce(
                 () ->
                     drive.runVelocity(
                         ChassisSpeeds.fromFieldRelativeSpeeds(
-                            new ChassisSpeeds(0, 0, 0), drive.getRotation())));
+                            new ChassisSpeeds(0, 0, 0), drive.getRotation())),
+                drive);
             branchReadyR = true;
             moveReadyness = false;
           }
@@ -347,7 +344,8 @@ public class Vision extends SubsystemBase {
             () ->
                 drive.runVelocity(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
-                        new ChassisSpeeds(0, 0, 0), drive.getRotation())));
+                        new ChassisSpeeds(0, 0, 0), drive.getRotation())),
+            drive);
 
         moveReadyness = false;
       }
@@ -360,11 +358,9 @@ public class Vision extends SubsystemBase {
         PhotonTrackedTarget target = result.getBestTarget();
 
         if (target.getYaw() < Units.radiansToDegrees(Math.atan(0.15 / distanceFromTag))) {
-          Commands.run(
-              () ->
-                  drive.runVelocity(
-                      ChassisSpeeds.fromFieldRelativeSpeeds(
-                          new ChassisSpeeds(0.5, 0.0, 0), drive.getRotation())));
+          drive.runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  new ChassisSpeeds(0.5, 0.0, 0), drive.getRotation()));
         } else {
           Commands.runOnce(
               () ->
@@ -384,11 +380,9 @@ public class Vision extends SubsystemBase {
         PhotonTrackedTarget target = result.getBestTarget();
 
         if (target.getYaw() > (Units.radiansToDegrees(Math.atan(0.15 / distanceFromTag)) * -1)) {
-          Commands.run(
-              () ->
-                  drive.runVelocity(
-                      ChassisSpeeds.fromFieldRelativeSpeeds(
-                          new ChassisSpeeds(-0.5, 0.0, 0), drive.getRotation())));
+          drive.runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  new ChassisSpeeds(-0.5, 0.0, 0), drive.getRotation()));
         } else {
           Commands.runOnce(
               () ->
