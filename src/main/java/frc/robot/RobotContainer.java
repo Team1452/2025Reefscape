@@ -35,6 +35,7 @@ import frc.robot.commands.MultiCommands;
 import frc.robot.commands.ShoulderCommands;
 import frc.robot.commands.Vision.AlignToCoral;
 import frc.robot.commands.Vision.AlignToReef;
+import frc.robot.commands.Vision.DontAlignToReef;
 import frc.robot.commands.Vision.MoveToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -175,6 +176,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("MoveToReef", new MoveToReef(drive, vision));
 
+    NamedCommands.registerCommand("ScoreL1", IntakeCommands.scoreL1(intake));
+
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemLogic();
@@ -229,9 +232,8 @@ public class RobotContainer {
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
 
-                Trigger disabledTriggerForKeepPos = new Trigger(()->DriverStation.isDisabled()); 
+    Trigger disabledTriggerForKeepPos = new Trigger(()->DriverStation.isDisabled()); 
     disabledTriggerForKeepPos.toggleOnTrue(MultiCommands.maintainAngles(intake, elevator, shoulder));
-
   }
 
   private void configureButtonBindings() {
@@ -257,7 +259,12 @@ public class RobotContainer {
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
 
-    controller.a().onTrue(Commands.runOnce(() -> elevator.setMotorSpeed(0.3)));
+    controller
+        .a()
+        .onTrue(new AlignToReef(drive, vision))
+        .onFalse(new DontAlignToReef(drive, vision))
+        .onFalse(DriveCommands.joystickDrive(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> -controller.getRightX()));
+
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
     controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
