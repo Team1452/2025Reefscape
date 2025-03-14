@@ -13,19 +13,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AlignToReefTag"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "MoveToReef"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "PlaceOnTier4"
+            "name": "ScoreL1"
           }
         }
       ]
