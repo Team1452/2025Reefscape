@@ -13,7 +13,7 @@ public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   /**
    * @param io The interfce)
-   */ 
+   */
   public Elevator(ElevatorIO io) {
     this.io = io;
   }

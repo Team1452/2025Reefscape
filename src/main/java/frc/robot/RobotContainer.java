@@ -21,14 +21,13 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
@@ -96,7 +95,6 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera1Name, robotToCamera1),
                 new VisionIOTargetOnly(camera2Name));
         break;
@@ -114,7 +112,6 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose));
         break;
@@ -129,8 +126,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        vision =
-            new Vision(drive, drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
         break;
 
       default:
@@ -143,8 +139,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        vision =
-            new Vision(drive, drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
         break;
     }
 
@@ -153,8 +148,8 @@ public class RobotContainer {
     shoulder = new Shoulder(new ShoulderIOSpark());
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    
-    // Set up SysId routines    
+
+    // Set up SysId routines
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
@@ -169,7 +164,7 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    
+
     autoChooser.addDefaultOption("Taxi back", new PathPlannerAuto("LeaveAuto"));
     autoChooser.addOption("Middle Auto", new PathPlannerAuto("MiddleAuto"));
 
@@ -243,12 +238,6 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Run intake routine when Y button is pressed
-    controller
-        .y()
-        .whileTrue(
-            new AlignToCoral(
-                drive, vision, 2, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     // Intake and handoff on bumper press.
     fightBox.button(3).onTrue(ElevatorCommands.goToTier(elevator, 1));
     fightBox.button(4).onTrue(ElevatorCommands.goToTier(elevator, 2));
@@ -258,31 +247,49 @@ public class RobotContainer {
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
 
     controller
-        .a()
+        .pov(0)
+        .whileTrue(
+            new AlignToCoral(
+                drive, vision, 2, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+    controller
+        .pov(180)
         .onTrue(new AlignToReef(drive, vision))
         .onFalse(new DontAlignToReef(drive, vision))
-        .onFalse(DriveCommands.joystickDrive(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> -controller.getRightX()));
-
-    controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
-    controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
-
-    controller.rightTrigger().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.5), intake));
-    controller.leftTrigger().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.5), intake));
-
-    controller.pov(0).whileTrue(Commands.run(() -> elevator.adjustRHeight(0.5), elevator));
-    controller.pov(180).whileTrue(Commands.run(() -> elevator.adjustRHeight(-0.5), elevator));
-    controller.pov(90).whileTrue(Commands.run(() -> shoulder.adjustRAngle(0.008), shoulder));
-    controller.pov(270).whileTrue(Commands.run(() -> shoulder.adjustRAngle(-0.008), shoulder));
+        .onFalse(
+            DriveCommands.joystickDrive(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> -controller.getRightX()));
 
     controller
-        .b()
+        .pov(90)
         .onTrue(
             Commands.runOnce(
                     () ->
                         drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d(Math.PI))),
                     drive)
                 .ignoringDisable(true));
+
+    controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
+    controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
+
+    controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.3), intake));
+    controller.b().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));
+
+    controller.y().whileTrue(Commands.run(() -> elevator.adjustRHeight(0.5), elevator));
+    controller.a().whileTrue(Commands.run(() -> elevator.adjustRHeight(-0.5), elevator));
+    controller
+        .rightTrigger(0.1)
+        .whileTrue(
+            Commands.run(
+                () -> shoulder.adjustRAngle(0.01 * controller.getRightTriggerAxis()), shoulder));
+    controller
+        .leftTrigger(0.1)
+        .whileTrue(
+            Commands.run(
+                () -> shoulder.adjustRAngle(-0.01 * controller.getLeftTriggerAxis()), shoulder));
   }
 
   /**

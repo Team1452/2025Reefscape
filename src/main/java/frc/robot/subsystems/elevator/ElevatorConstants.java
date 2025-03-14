@@ -7,7 +7,7 @@ public class ElevatorConstants {
   public static final int kshoulderPort = 10;
   public static final boolean motorsInverted = true;
   public static final double[] kElevatorHeights = {
-    28.5, 0, 0, 15, 39.5
+    28.5, 0, 0, 17, 42
   }; // Handoff height, tier 1, 2, 3, 4.
   // Handoff height is also the minimum height that the elevator can be at when the shoulder is down
   // and the intake is in.
