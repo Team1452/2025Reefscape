@@ -22,6 +22,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -152,8 +153,8 @@ public class RobotContainer {
     shoulder = new Shoulder(new ShoulderIOSpark());
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    /*
-    // Set up SysId routines
+    
+    // Set up SysId routines    
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
@@ -168,7 +169,7 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    */
+    
     autoChooser.addDefaultOption("Taxi back", new PathPlannerAuto("LeaveAuto"));
     autoChooser.addOption("Middle Auto", new PathPlannerAuto("MiddleAuto"));
 
@@ -231,9 +232,6 @@ public class RobotContainer {
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
-
-    Trigger disabledTriggerForKeepPos = new Trigger(()->DriverStation.isDisabled()); 
-    disabledTriggerForKeepPos.toggleOnTrue(MultiCommands.maintainAngles(intake, elevator, shoulder));
   }
 
   private void configureButtonBindings() {
@@ -293,6 +291,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new PathPlannerAuto("LeaveAuto");
+    return autoChooser.get();
   }
 }
