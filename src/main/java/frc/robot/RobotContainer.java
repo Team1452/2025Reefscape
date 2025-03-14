@@ -239,12 +239,21 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Intake and handoff on bumper press.
-    fightBox.button(3).onTrue(ElevatorCommands.goToTier(elevator, 1));
+    fightBox.button(3).onTrue(IntakeCommands.scoreL1(intake));
     fightBox.button(4).onTrue(ElevatorCommands.goToTier(elevator, 2));
     fightBox.button(6).onTrue(ElevatorCommands.goToTier(elevator, 3));
     fightBox.button(5).onTrue(ElevatorCommands.goToTier(elevator, 4));
+    fightBox.button(7).onTrue(IntakeCommands.spitOut(intake, true));
+    fightBox.button(8).onTrue(IntakeCommands.suckAndHold(intake));
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
+    controller.rightTrigger(0.9).and(controller.leftBumper()).whileTrue( //Drive slower when the right trigger and leftBumper are held.
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftY()/3,
+            () -> -controller.getLeftX()/3,
+            () -> -controller.getRightX()/3)
+    );
 
     controller
         .pov(0)
@@ -273,10 +282,10 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
-    controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
+    controller.leftBumper().and(controller.rightTrigger(0.9).negate()).onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
-    controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.3), intake));
-    controller.b().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));
+    controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));
+    controller.b().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.3), intake));
 
     controller.y().whileTrue(Commands.run(() -> elevator.adjustRHeight(0.5), elevator));
     controller.a().whileTrue(Commands.run(() -> elevator.adjustRHeight(-0.5), elevator));

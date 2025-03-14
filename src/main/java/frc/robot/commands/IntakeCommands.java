@@ -44,8 +44,7 @@ public class IntakeCommands {
     return Commands.sequence(
         goOut(intake),
         suckAndHold(intake),
-        new InstantCommand(
-            () -> intake.setIntakeAngle(IntakeConstants.intakeHandOffAngle), intake));
+        moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle));
   }
 
   public static Command scoreL1(Intake intake) {
