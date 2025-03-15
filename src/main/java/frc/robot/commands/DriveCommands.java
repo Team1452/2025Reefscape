@@ -75,7 +75,9 @@ public class DriveCommands {
         () -> {
           // Get linear velocity
           Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+              getLinearVelocityFromJoysticks(
+                  Math.copySign(Math.pow(xSupplier.getAsDouble(), 2), xSupplier.getAsDouble()),
+                  Math.copySign(Math.pow(ySupplier.getAsDouble(), 2), ySupplier.getAsDouble()));
 
           // Apply rotation deadband
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);

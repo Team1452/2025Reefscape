@@ -22,6 +22,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -213,14 +214,8 @@ public class RobotContainer {
 
   private void configureSubsystemLogic() {
     Trigger elevatorLimitSwtichTrigger = new Trigger(() -> elevator.eLimitSwitch());
+    
 
-    Trigger speedStowTrigger =
-        new Trigger(
-            () ->
-                Math.hypot(
-                        drive.getChassisSpeeds().vxMetersPerSecond,
-                        drive.getChassisSpeeds().vyMetersPerSecond)
-                    > 7); // If the robot's speed vector is great than 7 m/s.
     // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we neexd to
     // move the shoulder up.
     Trigger shoulderCrashTrigger =
@@ -266,15 +261,8 @@ public class RobotContainer {
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
-
-    speedStowTrigger.whileTrue(
-        MultiCommands.safeMode(
-            elevator,
-            shoulder)); // While going faster than 4 m/s, move the elevator and shoulder to a safe
-    // position.
-
+   
   }
-
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -285,6 +273,7 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Intake and handoff on bumper press.
+    fightBox.button(1).toggleOnTrue(MultiCommands.safeMode(elevator, shoulder));
     fightBox.button(3).onTrue(IntakeCommands.scoreL1(intake));
     fightBox.button(4).onTrue(ElevatorCommands.goToTier(elevator, 2));
     fightBox.button(6).onTrue(ElevatorCommands.goToTier(elevator, 3));
@@ -361,7 +350,6 @@ public class RobotContainer {
             Commands.run(
                 () -> shoulder.adjustRAngle(-0.01 * controller.getLeftTriggerAxis()), shoulder));
   }
-
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *

@@ -69,6 +69,7 @@ public class Drive extends SubsystemBase {
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
+
   // PathPlanner config constants
   private static final double ROBOT_MASS_KG = 52; // 115 lbs
   private static final double ROBOT_MOI = 6.883;
@@ -303,6 +304,18 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
+  public double getAvgSpeed() {
+    return (modules[0].getVelocityMetersPerSec()
+            + modules[1].getVelocityMetersPerSec()
+            + modules[2].getVelocityMetersPerSec()
+            + modules[3].getVelocityMetersPerSec())
+        / 4;
+  }
+
+  public double getPercentageOfSpeed() {
+    return getAvgSpeed() / TunerConstants.kSpeedAt12Volts.baseUnitMagnitude();
   }
 
   /** Returns the position of each module in radians. */
