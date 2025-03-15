@@ -51,20 +51,20 @@ public class IntakeCommands {
 
   public static Command intakeCoralAndStow(Intake intake) {
     return Commands.sequence(
-        goOut(intake),
-        suckAndHold(intake),
-        moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle))
-    //  .andThen(()->intake.changeMotorMode(false))
-    ;
+            goOut(intake),
+            suckAndHold(intake),
+            moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle))
+        .handleInterrupt(intake::stopSucker);
   }
 
   public static Command scoreL1(Intake intake) {
     return Commands.sequence(
-        new InstantCommand(
-            () -> intake.setIntakeAngle(IntakeConstants.intakeLevelOneAngle), intake),
-        Commands.waitUntil(intake::nearRPosition),
-        spitOut(intake, false),
-        new InstantCommand(
-            () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle), intake));
+            new InstantCommand(
+                () -> intake.setIntakeAngle(IntakeConstants.intakeLevelOneAngle), intake),
+            Commands.waitUntil(intake::nearRPosition),
+            spitOut(intake, false),
+            new InstantCommand(
+                () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle), intake))
+        .handleInterrupt(intake::stopSucker);
   }
 }

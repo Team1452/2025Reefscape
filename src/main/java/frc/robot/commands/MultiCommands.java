@@ -21,6 +21,10 @@ public class MultiCommands {
         .ignoringDisable(true);
   }
 
+  public static Command killAllComands(Intake intake, Elevator elevator, Shoulder shoulder) {
+    return (Commands.idle(intake, elevator, shoulder));
+  }
+
   public static Command handOff(Intake intake, Elevator elevator, Shoulder shoulder) {
     return Commands.sequence(
         Commands.parallel(
@@ -60,7 +64,7 @@ public class MultiCommands {
     double returnPositions[] = {elevator.getRHeight(), shoulder.getRAngle()};
     return Commands.run(
             () -> {
-              elevator.setRHeight(5);
+              elevator.setRHeight(Math.min(returnPositions[0], 5));
               shoulder.setRAngle(0.25);
             },
             elevator,

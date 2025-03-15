@@ -22,7 +22,7 @@ public class Shoulder extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs); // Refresh the inputs.
     if (Math.abs(shoulderRAngle - inputs.shoulderAngle) > 0.1) {
-      System.out.println("resetting IAccum");
+      //  System.out.println("resetting IAccum");
       io.resetIAccum();
     }
     io.setShoulderAngle(shoulderRAngle);

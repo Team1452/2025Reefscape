@@ -6,7 +6,7 @@ public final class IntakeConstants {
   public static final double intakeSuckSpeed = 0.4;
   public static final double intakeHandOffAngle = -2.8;
   public static final double intakeIntakeAngle = 28.5;
-  public static final double intakeLevelOneAngle = 7.15;
+  public static final double intakeLevelOneAngle = 7.5;
   public static final double intakeStartUpAngle = 2.93;
   public static final int suckerSpikeThreshhold = 20;
   public static final int rotatorSpikeThreshhold = 20;

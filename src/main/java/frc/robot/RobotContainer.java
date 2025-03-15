@@ -220,8 +220,7 @@ public class RobotContainer {
                 Math.hypot(
                         drive.getChassisSpeeds().vxMetersPerSecond,
                         drive.getChassisSpeeds().vyMetersPerSecond)
-                    > 4); // If the robot's speed vector is great than 4 m/s.
-
+                    > 7); // If the robot's speed vector is great than 7 m/s.
     // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we neexd to
     // move the shoulder up.
     Trigger shoulderCrashTrigger =
@@ -273,6 +272,7 @@ public class RobotContainer {
             elevator,
             shoulder)); // While going faster than 4 m/s, move the elevator and shoulder to a safe
     // position.
+
   }
 
   private void configureButtonBindings() {
@@ -305,6 +305,7 @@ public class RobotContainer {
                 shoulder));
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
+    controller.button(7).whileTrue(MultiCommands.killAllComands(intake, elevator, shoulder));
     controller
         .pov(270)
         .toggleOnTrue( // Drive slower when the right trigger and leftBumper are held.
