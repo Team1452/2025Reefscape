@@ -21,6 +21,9 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -57,6 +60,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionIOTargetOnly;
+import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -79,6 +83,8 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  private final GenericEntry pEntry, iEntry, dEntry, fEntry;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -173,6 +179,32 @@ public class RobotContainer {
     NamedCommands.registerCommand("MoveToReef", new MoveToReef(drive, vision));
 
     NamedCommands.registerCommand("ScoreL1", IntakeCommands.scoreL1(intake));
+    var tuningTab = Shuffleboard.getTab("PID Tuning");
+    // Create slider widgets for P, I, and D.
+    pEntry =
+        tuningTab
+            .add("P Gain", ElevatorConstants.kShoulderGains[0])
+            .withWidget(BuiltInWidgets.kNumberSlider)
+            .withProperties(Map.of("min", 0, "max", 10))
+            .getEntry();
+    iEntry =
+        tuningTab
+            .add("I Gain", ElevatorConstants.kShoulderGains[1])
+            .withWidget(BuiltInWidgets.kNumberSlider)
+            .withProperties(Map.of("min", 0, "max", 1))
+            .getEntry();
+    dEntry =
+        tuningTab
+            .add("D Gain", ElevatorConstants.kShoulderGains[2])
+            .withWidget(BuiltInWidgets.kNumberSlider)
+            .withProperties(Map.of("min", 0, "max", 5))
+            .getEntry();
+    fEntry =
+        tuningTab
+            .add("FF Gain", ElevatorConstants.kShoulderGains[3])
+            .withWidget(BuiltInWidgets.kNumberSlider)
+            .withProperties(Map.of("min", 0, "max", 5))
+            .getEntry();
 
     // Configure the button bindings
     configureButtonBindings();
@@ -182,7 +214,15 @@ public class RobotContainer {
   private void configureSubsystemLogic() {
     Trigger elevatorLimitSwtichTrigger = new Trigger(() -> elevator.eLimitSwitch());
 
-    // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we need to
+    Trigger speedStowTrigger =
+        new Trigger(
+            () ->
+                Math.hypot(
+                        drive.getChassisSpeeds().vxMetersPerSecond,
+                        drive.getChassisSpeeds().vyMetersPerSecond)
+                    > 4); // If the robot's speed vector is great than 4 m/s.
+
+    // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we neexd to
     // move the shoulder up.
     Trigger shoulderCrashTrigger =
         new Trigger(
@@ -227,6 +267,12 @@ public class RobotContainer {
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
+
+    speedStowTrigger.whileTrue(
+        MultiCommands.safeMode(
+            elevator,
+            shoulder)); // While going faster than 4 m/s, move the elevator and shoulder to a safe
+    // position.
   }
 
   private void configureButtonBindings() {
@@ -246,6 +292,17 @@ public class RobotContainer {
     fightBox.button(7).onTrue(IntakeCommands.spitOut(intake, true));
     fightBox.button(8).onTrue(IntakeCommands.suckAndHold(intake));
     fightBox.button(9).onTrue(MultiCommands.startUpAngles(intake, elevator, shoulder));
+    fightBox
+        .button(10)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    shoulder.setPIDFGains(
+                        pEntry.getDouble(ElevatorConstants.kShoulderGains[0]),
+                        iEntry.getDouble(ElevatorConstants.kShoulderGains[1]),
+                        dEntry.getDouble(ElevatorConstants.kShoulderGains[2]),
+                        fEntry.getDouble(ElevatorConstants.kShoulderGains[3])),
+                shoulder));
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
     controller
@@ -255,7 +312,8 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY() / 3,
                 () -> -controller.getLeftX() / 3,
-                () -> -controller.getRightX() / 3));
+                () -> -controller.getRightX() / 3))
+        .onTrue(ShoulderCommands.foldIn(shoulder));
 
     controller
         .pov(0)

@@ -55,4 +55,20 @@ public class MultiCommands {
         // automatically move the intake out of the way)
         );
   }
+
+  public static Command safeMode(Elevator elevator, Shoulder shoulder) {
+    double returnPositions[] = {elevator.getRHeight(), shoulder.getRAngle()};
+    return Commands.run(
+            () -> {
+              elevator.setRHeight(5);
+              shoulder.setRAngle(0.25);
+            },
+            elevator,
+            shoulder)
+        .finallyDo(
+            () -> {
+              elevator.setRHeight(returnPositions[0]);
+              shoulder.setRAngle(returnPositions[1]);
+            });
+  }
 }

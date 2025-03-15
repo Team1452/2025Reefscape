@@ -8,6 +8,7 @@ public class Shoulder extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ShoulderIO io;
   private double shoulderRAngle = 0.29;
+
   // Inputs from the elevator hardware.
   private final ShoulderIOInputsAutoLogged inputs = new ShoulderIOInputsAutoLogged();
   /**
@@ -46,6 +47,10 @@ public class Shoulder extends SubsystemBase {
 
   public double getRAngle() {
     return shoulderRAngle;
+  }
+
+  public void setPIDFGains(double p, double i, double d, double f) {
+    io.setPIDFGains(p, i, d, f);
   }
 
   public boolean nearRPosition() {

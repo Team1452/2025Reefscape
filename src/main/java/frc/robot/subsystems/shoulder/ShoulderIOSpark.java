@@ -65,6 +65,18 @@ public class ShoulderIOSpark implements ShoulderIO {
   }
 
   @Override
+  public void setPIDFGains(double p, double i, double d, double f) {
+    SparkUtil.tryUntilOk(
+        m_shoulder,
+        5,
+        () ->
+            m_shoulder.configure(
+                m_shoulderConfig.apply(m_shoulderConfig.closedLoop.pidf(p, i, d, f)),
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters));
+  }
+
+  @Override
   public void resetIAccum() {
     m_ShoulderController.setIAccum(0);
   }

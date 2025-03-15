@@ -14,5 +14,7 @@ public interface ShoulderIO {
 
   public default void resetIAccum() {}
 
+  public default void setPIDFGains(double p, double i, double d, double f) {}
+
   public default void setShoulderAngle(double angle) {}
 }
