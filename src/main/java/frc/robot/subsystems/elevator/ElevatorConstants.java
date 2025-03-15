@@ -21,9 +21,9 @@ public class ElevatorConstants {
     0 // F
   };
   public static final double[] kShoulderGains = {
-    2, // P
-    0.02, // I
-    2.5, // D
+    3, // P
+    0.01, // I
+    2, // D
     0.1 // F
   };
   public static final double kElevatorTolerance =
