@@ -28,7 +28,7 @@ public class IntakeIOSpark implements IntakeIO {
     rotatorConfig
         .smartCurrentLimit(1)
         .inverted(IntakeConstants.reversedRotator)
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .closedLoop
         .pidf(
             IntakeConstants.kIntakeGains[0],
@@ -82,6 +82,14 @@ public class IntakeIOSpark implements IntakeIO {
   @Override
   public void setSuckerVelocity(double speed) {
     m_sucker.set(speed);
+  }
+
+  @Override
+  public void changeMotorMode(boolean brakeMode) {
+    m_rotator.configureAsync(
+        rotatorConfig.idleMode(brakeMode ? IdleMode.kBrake : IdleMode.kCoast),
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
   }
 
   @Override

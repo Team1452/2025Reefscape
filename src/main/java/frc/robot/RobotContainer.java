@@ -245,15 +245,17 @@ public class RobotContainer {
     fightBox.button(5).onTrue(ElevatorCommands.goToTier(elevator, 4));
     fightBox.button(7).onTrue(IntakeCommands.spitOut(intake, true));
     fightBox.button(8).onTrue(IntakeCommands.suckAndHold(intake));
+    fightBox.button(9).onTrue(MultiCommands.startUpAngles(intake, elevator, shoulder));
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
-    controller.rightTrigger(0.9).and(controller.leftBumper()).whileTrue( //Drive slower when the right trigger and leftBumper are held.
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY()/3,
-            () -> -controller.getLeftX()/3,
-            () -> -controller.getRightX()/3)
-    );
+    controller
+        .pov(270)
+        .toggleOnTrue( // Drive slower when the right trigger and leftBumper are held.
+            DriveCommands.joystickDrive(
+                drive,
+                () -> -controller.getLeftY() / 3,
+                () -> -controller.getLeftX() / 3,
+                () -> -controller.getRightX() / 3));
 
     controller
         .pov(0)
@@ -282,7 +284,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
-    controller.leftBumper().and(controller.rightTrigger(0.9).negate()).onTrue(IntakeCommands.intakeCoralAndStow(intake));
+    controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
     controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));
     controller.b().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.3), intake));
@@ -307,6 +309,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return Commands.sequence(autoChooser.get(), IntakeCommands.scoreL1(intake));
   }
 }

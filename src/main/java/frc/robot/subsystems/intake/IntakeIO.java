@@ -17,6 +17,8 @@ public interface IntakeIO {
 
   public default void setRotatorAngle(double angle) {}
 
+  public default void changeMotorMode(boolean brakeMode) {}
+
   public default void setSuckerVelocity(double speed) {}
 
   public default void disableVoltage() {}

@@ -21,12 +21,21 @@ public class IntakeCommands {
   public static Command suckAndHold(Intake intake) {
     return Commands.sequence(
         new InstantCommand(intake::suckSucker, intake), // start sucking
-        new InstantCommand(() -> intake.setSlopState(true), intake), // allow "wiggle" of intake
+        new InstantCommand(
+            () -> {
+              intake.setSlopState(true);
+              // intake.changeMotorMode(false);
+            },
+            intake), // allow "wiggle" of intake
         Commands.waitUntil(intake::getSuckerGo), // wait until sucking is going
         Commands.waitUntil(
             intake::getSuckerStop), // after we know that we've started up, wait until we've stopped
         new InstantCommand(
-            () -> intake.setSlopState(false), intake), // stop allowing "wiggle" of intake
+            () -> {
+              intake.setSlopState(false);
+              //  intake.changeMotorMode(true);
+            },
+            intake), // stop allowing "wiggle" of intake
         new InstantCommand(intake::slightSuck, intake) // tension the coral in just a little.
         );
   }
@@ -44,7 +53,9 @@ public class IntakeCommands {
     return Commands.sequence(
         goOut(intake),
         suckAndHold(intake),
-        moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle));
+        moveIntakeTo(intake, IntakeConstants.intakeHandOffAngle))
+    //  .andThen(()->intake.changeMotorMode(false))
+    ;
   }
 
   public static Command scoreL1(Intake intake) {

@@ -48,6 +48,7 @@ public class ShoulderIOSpark implements ShoulderIO {
             m_shoulder.configure(
                 m_shoulderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     m_ShoulderController = m_shoulder.getClosedLoopController();
+
     shoulderAbsoluteEncoder = m_shoulder.getAbsoluteEncoder();
     shoulderRelativeEncoder = m_shoulder.getEncoder();
     SparkUtil.tryUntilOk(
@@ -60,6 +61,12 @@ public class ShoulderIOSpark implements ShoulderIO {
   public void updateInputs(ShoulderIOInputs inputs) {
     inputs.shoulderAngle = shoulderAbsoluteEncoder.getPosition();
     inputs.internalAngle = shoulderRelativeEncoder.getPosition();
+    inputs.shoulderSpeed = shoulderRelativeEncoder.getVelocity();
+  }
+
+  @Override
+  public void resetIAccum() {
+    m_ShoulderController.setIAccum(0);
   }
 
   @Override

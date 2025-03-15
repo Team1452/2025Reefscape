@@ -7,7 +7,10 @@ import frc.robot.subsystems.shoulder.Shoulder;
 
 public class ShoulderCommands {
   public static Command moveShoulderTo(Shoulder shoulder, double angle) {
-    return Commands.run(() -> shoulder.setRAngle(angle), shoulder).until(shoulder::nearRPosition);
+    return Commands.run(() -> shoulder.setRAngle(angle), shoulder)
+        .alongWith(Commands.print("going to " + angle))
+        .until(() -> shoulder.nearRPosition() && shoulder.getSpeed() < 1)
+        .andThen(Commands.print("At " + angle));
   }
 
   public static Command place(Shoulder shoulder) {

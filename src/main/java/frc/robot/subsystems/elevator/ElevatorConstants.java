@@ -21,16 +21,16 @@ public class ElevatorConstants {
     0 // F
   };
   public static final double[] kShoulderGains = {
-    2, // P
-    0, // I
-    0, // D
+    3, // P
+    0.01, // I
+    2, // D
     0.1 // F
   };
   public static final double kElevatorTolerance =
-      0.05; // For the (isNear) method, in rotations of the motor.
+      0.25; // For the (isNear) method, in rotations11   of the motor.
   public static final double shoulderLength =
       19.5; // The minimum height that the elevator can be at when the shoulder directly down
-  public static final double kShoulderOffset = 0.034; // In rotations of the shoulder.
+  public static final double kShoulderOffset = 0.034 + 0.008; // In rotations of the shoulder.
   public static final double maxHeight = 43; // In rotations of the motor.
   public static final double intakeHeight =
       10; // In rotations of the motor. This is the minimum height that the elevator can be at when

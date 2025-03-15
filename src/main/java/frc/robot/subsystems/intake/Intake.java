@@ -85,6 +85,10 @@ public class Intake extends SubsystemBase {
     return inputs.suckerSpeed < 1;
   }
 
+  public void changeMotorMode(boolean brakeMode) {
+    io.changeMotorMode(brakeMode);
+  }
+
   public void setIntakeAngle(double angle) {
     intakeRAngle = angle;
   }

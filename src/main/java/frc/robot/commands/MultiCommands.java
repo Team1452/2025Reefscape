@@ -11,7 +11,7 @@ import frc.robot.subsystems.shoulder.Shoulder;
 public class MultiCommands {
   private MultiCommands() {}
 
-  public static Command maintainAngles(Intake intake, Elevator elevator, Shoulder shoulder) {
+  public static Command startUpAngles(Intake intake, Elevator elevator, Shoulder shoulder) {
     return Commands.run(
             () -> {
               intake.setIntakeAngle(intake.getIntakeAngle());

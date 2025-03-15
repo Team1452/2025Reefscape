@@ -7,7 +7,7 @@ import org.littletonrobotics.junction.Logger;
 public class Shoulder extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ShoulderIO io;
-  private double shoulderRAngle = 0.264;
+  private double shoulderRAngle = 0.29;
   // Inputs from the elevator hardware.
   private final ShoulderIOInputsAutoLogged inputs = new ShoulderIOInputsAutoLogged();
   /**
@@ -20,10 +20,15 @@ public class Shoulder extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs); // Refresh the inputs.
+    if (Math.abs(shoulderRAngle - inputs.shoulderAngle) > 0.1) {
+      System.out.println("resetting IAccum");
+      io.resetIAccum();
+    }
     io.setShoulderAngle(shoulderRAngle);
     Logger.processInputs("ElevatorShoulder", inputs);
     Logger.recordOutput("ElevatorShoulder/AbsShoulderAngle", inputs.shoulderAngle);
     Logger.recordOutput("ElevatorShoulder/InternalShoulderAngle", inputs.internalAngle);
+    Logger.recordOutput("ElevatorShoulder/ShoulderSpeed", inputs.shoulderSpeed);
     Logger.recordOutput("ElevatorShoulder/ShoulderRAngle", shoulderRAngle);
   }
 
@@ -33,6 +38,10 @@ public class Shoulder extends SubsystemBase {
 
   public double getAngle() {
     return inputs.shoulderAngle;
+  }
+
+  public double getSpeed() {
+    return inputs.shoulderSpeed;
   }
 
   public double getRAngle() {
