@@ -60,8 +60,6 @@ public class AlignToCoral extends Command {
   private final int cameraIndex;
   private DoubleSupplier xSupplier;
   private DoubleSupplier ySupplier;
-  private boolean aligned;
-
   public double omega;
 
   /**

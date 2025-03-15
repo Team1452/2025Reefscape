@@ -12,7 +12,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class AlignToAprilTag extends Command {
   private final Drive drive;
-  private final Vision vision;
   private final ProfiledPIDController angleController;
 
   // PID/trajectory constraints (using the same values as in DriveCommands)
@@ -25,13 +24,8 @@ public class AlignToAprilTag extends Command {
   // Deadband for vision target alignment error (radians)
   private static final double TARGET_DEADBAND = 0.05;
 
-  private final int cameraIndex;
-
   public AlignToAprilTag(Drive drive, Vision vision, int cameraIndex) {
     this.drive = drive;
-    this.vision = vision;
-    this.cameraIndex = cameraIndex;
-
     this.angleController =
         new ProfiledPIDController(
             ANGLE_KP,

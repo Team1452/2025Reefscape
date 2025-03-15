@@ -19,12 +19,6 @@ public class DontAlignToReef extends Command {
   private static final double ANGLE_MAX_VELOCITY = 8.0; // rad/s
   private static final double ANGLE_MAX_ACCELERATION = 20.0; // rad/s^2
 
-  // Deadband for vision target alignment error (radians)
-  private static final double TARGET_DEADBAND = 0.05;
-  private double targetRange;
-
-  private double targetError;
-
   public DontAlignToReef(Drive drive, Vision vision) {
     this.drive = drive;
     this.vision = vision;
