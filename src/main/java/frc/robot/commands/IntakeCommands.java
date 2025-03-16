@@ -59,10 +59,9 @@ public class IntakeCommands {
 
   public static Command scoreL1(Intake intake) {
     return Commands.sequence(
-            new InstantCommand(
-                () -> intake.setIntakeAngle(IntakeConstants.intakeLevelOneAngle), intake),
-            Commands.waitUntil(intake::nearRPosition),
+            moveIntakeTo(intake, IntakeConstants.intakeLevelOneAngle),
             spitOut(intake, false),
+            Commands.waitSeconds(1.5),
             new InstantCommand(
                 () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle), intake))
         .handleInterrupt(intake::stopSucker);

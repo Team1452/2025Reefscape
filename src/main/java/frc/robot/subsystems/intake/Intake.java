@@ -7,8 +7,8 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase {
   // The hardware interface for the intake subsystem.
   private final IntakeIO io;
-  private boolean slopState = false;
-  private double intakeRAngle = IntakeConstants.intakeStartUpAngle;
+  private static boolean slopState = false;
+  private static double intakeRAngle = IntakeConstants.intakeStartUpAngle;
 
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
@@ -69,7 +69,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void spitSucker(boolean bubble) {
-    io.setSuckerVelocity(bubble ? 0.05 :  IntakeConstants.intakeL1Speed);
+    io.setSuckerVelocity(bubble ? -0.05 : IntakeConstants.intakeL1Speed);
   }
 
   public void stopSucker() {
@@ -81,7 +81,7 @@ public class Intake extends SubsystemBase {
   }
 
   public boolean getSuckerStop() {
-    return inputs.suckerSpeed < 1;
+    return inputs.suckerSpeed < 2;
   }
 
   public void changeMotorMode(boolean brakeMode) {

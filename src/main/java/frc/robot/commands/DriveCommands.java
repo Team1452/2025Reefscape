@@ -80,7 +80,7 @@ public class DriveCommands {
                   Math.copySign(Math.pow(ySupplier.getAsDouble(), 2), ySupplier.getAsDouble()));
 
           // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble()/2, DEADBAND);
+          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble() / 2, DEADBAND);
 
           // Square rotation value for more precise control
           omega = Math.copySign(omega * omega, omega);

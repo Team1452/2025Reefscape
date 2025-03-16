@@ -3,14 +3,12 @@ package frc.robot.subsystems.intake;
 public final class IntakeConstants {
   public static final int IntakeID = 50;
   public static final int RollerID = 11;
-  public static final double intakeSuckSpeed = 0.4;
-  public static final double intakeL1Speed = 0.02;
+  public static final double intakeSuckSpeed = 0.35;
+  public static final double intakeL1Speed = -0.15;
   public static final double intakeHandOffAngle = -2.8;
   public static final double intakeIntakeAngle = 28.5;
   public static final double intakeLevelOneAngle = 10;
   public static final double intakeStartUpAngle = 2.93;
-  public static final int suckerSpikeThreshhold = 20;
-  public static final int rotatorSpikeThreshhold = 20;
 
   public static final boolean reversedRotator = true;
   public static final boolean reversedSucker = true;
