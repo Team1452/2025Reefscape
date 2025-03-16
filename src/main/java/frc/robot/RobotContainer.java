@@ -22,7 +22,6 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -214,7 +213,6 @@ public class RobotContainer {
 
   private void configureSubsystemLogic() {
     Trigger elevatorLimitSwtichTrigger = new Trigger(() -> elevator.eLimitSwitch());
-    
 
     // if the shoulder is down, and the ACTUAL HEIGHT of the elevator is too low, then we neexd to
     // move the shoulder up.
@@ -261,8 +259,8 @@ public class RobotContainer {
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
-   
   }
+
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -295,6 +293,13 @@ public class RobotContainer {
     fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
     fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
     controller.button(7).whileTrue(MultiCommands.killAllComands(intake, elevator, shoulder));
+    fightBox.button(2).onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.72)));
+    fightBox
+        .axisGreaterThan(3, 0.6)
+        .onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.75)));
+    fightBox
+        .axisGreaterThan(2, 0.6)
+        .onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.78)));
     controller
         .pov(270)
         .toggleOnTrue( // Drive slower when the right trigger and leftBumper are held.
@@ -331,7 +336,11 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    controller.rightBumper().onTrue(MultiCommands.handOff(intake, elevator, shoulder));
+    controller
+        .rightBumper()
+        .onTrue(
+            MultiCommands.handOff(
+                intake, elevator, shoulder, shoulder::getShoulderAngleForHandoff));
     controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
 
     controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));

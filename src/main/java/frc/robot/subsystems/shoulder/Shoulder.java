@@ -7,7 +7,8 @@ import org.littletonrobotics.junction.Logger;
 public class Shoulder extends SubsystemBase {
   // Hardware interface for the elevator.
   private final ShoulderIO io;
-  private double shoulderRAngle = 0.29;
+  private static double shoulderRAngle = 0.29;
+  private double shoulderHandoffAngle;
 
   // Inputs from the elevator hardware.
   private final ShoulderIOInputsAutoLogged inputs = new ShoulderIOInputsAutoLogged();
@@ -16,6 +17,7 @@ public class Shoulder extends SubsystemBase {
    */
   public Shoulder(ShoulderIO io) {
     this.io = io;
+    shoulderHandoffAngle = 0.75;
   }
 
   @Override
@@ -50,6 +52,16 @@ public class Shoulder extends SubsystemBase {
 
   public void setPIDFGains(double p, double i, double d, double f) {
     io.setPIDFGains(p, i, d, f);
+  }
+
+  public void setShoulderAngleForHandoff(double a) {
+    shoulderHandoffAngle = a;
+    System.out.println(shoulderHandoffAngle);
+  }
+
+  public double getShoulderAngleForHandoff() {
+    System.out.println(shoulderHandoffAngle);
+    return shoulderHandoffAngle;
   }
 
   public boolean nearRPosition() {

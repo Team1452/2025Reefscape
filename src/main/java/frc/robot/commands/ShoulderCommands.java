@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.shoulder.Shoulder;
+import java.util.function.DoubleSupplier;
 
 public class ShoulderCommands {
   public static Command moveShoulderTo(Shoulder shoulder, double angle) {
@@ -12,6 +13,13 @@ public class ShoulderCommands {
         .alongWith(Commands.print("going to " + angle))
         .until(() -> shoulder.nearRPosition() && shoulder.getSpeed() < 1)
         .andThen(Commands.print("At " + angle));
+  }
+
+  public static Command moveShoulderTo(Shoulder shoulder, DoubleSupplier angle) {
+    return Commands.run(() -> shoulder.setRAngle(angle.getAsDouble()), shoulder)
+        .alongWith(Commands.print("going to " + angle.getAsDouble()))
+        .until(() -> shoulder.nearRPosition() && shoulder.getSpeed() < 1)
+        .andThen(Commands.print("At " + angle.getAsDouble()));
   }
 
   public static Command foldIn(Shoulder shoulder) {
