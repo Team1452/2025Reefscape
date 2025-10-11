@@ -17,8 +17,11 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
@@ -33,13 +36,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
-import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.MultiCommands;
 import frc.robot.commands.ShoulderCommands;
-import frc.robot.commands.Vision.AlignToCoral;
-import frc.robot.commands.Vision.AlignToReef;
-import frc.robot.commands.Vision.DontAlignToReef;
-import frc.robot.commands.Vision.MoveToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -50,16 +48,13 @@ import frc.robot.subsystems.drive.ModuleIOTalons;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.elevator.ElevatorIOSpark;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
-import frc.robot.subsystems.intake.IntakeIOSpark;
 import frc.robot.subsystems.shoulder.Shoulder;
 import frc.robot.subsystems.shoulder.ShoulderIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import frc.robot.subsystems.vision.VisionIOTargetOnly;
+import java.util.List;
 import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -73,7 +68,6 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
-  private final Intake intake;
   private final Elevator elevator;
   private final Shoulder shoulder;
 
@@ -100,9 +94,11 @@ public class RobotContainer {
                 new ModuleIOTalons(TunerConstants.BackRight));
         vision =
             new Vision(
-                drive,
-                new VisionIOPhotonVision(camera1Name, robotToCamera1),
-                new VisionIOTargetOnly(camera2Name));
+                drive::addVisionMeasurement,
+                new VisionIOLimelight(camera1Name, drive::getRotation),
+                new VisionIOLimelight(camera2Name, drive::getRotation),
+                new VisionIOLimelight(camera3Name, drive::getRotation),
+                new VisionIOLimelight(camera4Name, drive::getRotation));
         break;
 
       case SIM:
@@ -117,7 +113,7 @@ public class RobotContainer {
 
         vision =
             new Vision(
-                drive,
+                drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose));
         break;
@@ -132,7 +128,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
 
       default:
@@ -145,11 +141,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
     }
 
-    intake = new Intake(new IntakeIOSpark());
     elevator = new Elevator(new ElevatorIOSpark());
     shoulder = new Shoulder(new ShoulderIOSpark());
     // Set up auto routines
@@ -174,11 +169,6 @@ public class RobotContainer {
     autoChooser.addDefaultOption("Taxi back", new PathPlannerAuto("LeaveAuto"));
     autoChooser.addOption("Middle Auto", new PathPlannerAuto("MiddleAuto"));
 
-    NamedCommands.registerCommand("AlignToReefTag", new AlignToReef(drive, vision));
-
-    NamedCommands.registerCommand("MoveToReef", new MoveToReef(drive, vision));
-
-    NamedCommands.registerCommand("ScoreL1", IntakeCommands.scoreL1(intake));
     var tuningTab = Shuffleboard.getTab("PID Tuning");
     // Create slider widgets for P, I, and D.
     pEntry =
@@ -227,18 +217,8 @@ public class RobotContainer {
     // If the REQUESTED HEIGHT of the elevator is lower than a height where it would hit the intake,
     // then we need to move the intake out of the way (if its ACTUALLY IN)
 
-    Trigger elevatorLoweringTrigger =
-        new Trigger(
-            () ->
-                elevator.getRHeight() < ElevatorConstants.intakeHeight && !intake.getIntakeOpen());
-
     // If the REQUESTED ANGLE of the intake is in, and the ACTUAL HEIGHT of the elevator is too low,
     // then we need to move the elevator up out of the way.
-    Trigger elevatorUpTrigger =
-        new Trigger(
-            () ->
-                elevator.getHeight() < ElevatorConstants.intakeHeight
-                    && !intake.getRIntakeOpen()); // for shoulder UP cases
 
     shoulderCrashTrigger.onTrue(
         new InstantCommand(() -> shoulder.setRAngle(0.25), shoulder)
@@ -246,22 +226,65 @@ public class RobotContainer {
                 Commands.print(
                     "Shoulder Crash Trigger"))); // move the shoulder straight up to avoid crashing
     // into the robot.
-    elevatorLoweringTrigger.onTrue(
-        new InstantCommand(
-                () -> intake.setIntakeAngle(IntakeConstants.intakeStartUpAngle + 1), intake)
-            .andThen(
-                Commands.print(
-                    "Elevator Lowering Trigger"))); // Move the intake to a safe position.
-    elevatorUpTrigger.onTrue(
-        new InstantCommand(() -> elevator.setRHeight(ElevatorConstants.intakeHeight + 3), elevator)
-            .andThen(
-                Commands.print("Elevator Up Trigger"))); // Move the elevator up out of the way.
+
     elevatorLimitSwtichTrigger.onTrue(
         new InstantCommand(elevator::resetEncoder)
             .andThen(Commands.print("Elevator Limit Switch Trigger"))); // reset the encoder.
   }
 
   private void configureButtonBindings() {
+
+    // on the fly path generation
+    List<Waypoint> toprightred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(13.743, 5.145, Rotation2d.fromDegrees(-30)));
+    List<Waypoint> middlerightred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(14.384, 4.075, Rotation2d.fromDegrees(-90)));
+    List<Waypoint> bottomrightred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(13.700, 2.887, Rotation2d.fromDegrees(-150)));
+    List<Waypoint> bottomleftred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(12.428, 2.900, Rotation2d.fromDegrees(150)));
+    List<Waypoint> middleleftred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(11.737, 4, Rotation2d.fromDegrees(90)));
+    List<Waypoint> topleftred =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(12.421, 5.182, Rotation2d.fromDegrees(30)));
+
+    List<Waypoint> toprightblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(-30)));
+    List<Waypoint> middlerightblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(5.902, 4.018, Rotation2d.fromDegrees(-90)));
+    List<Waypoint> bottomrightblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(5.167, 2.879, Rotation2d.fromDegrees(-150)));
+    List<Waypoint> bottomleftblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(3.182, 2.876, Rotation2d.fromDegrees(150)));
+    List<Waypoint> middleleftblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(3.164, 4, Rotation2d.fromDegrees(90)));
+    List<Waypoint> topleftblue =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(30)));
+
+    List<Waypoint> redHumanStation1 =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(16.304, 7.042, Rotation2d.fromDegrees(-126)));
+    List<Waypoint> redHumanStation2 =
+        PathPlannerPath.waypointsFromPoses(
+            drive.getPose(), new Pose2d(16.425, 1.042, Rotation2d.fromDegrees(26)));
+
+    PathConstraints constraints =
+        new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+    // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use
+    // unlimited constraints, only limited by motor torque and nominal battery voltage
+
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -271,14 +294,69 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Intake and handoff on bumper press.
-    fightBox.button(1).toggleOnTrue(MultiCommands.safeMode(elevator, shoulder));
-    fightBox.button(3).onTrue(IntakeCommands.scoreL1(intake));
-    fightBox.button(4).onTrue(ElevatorCommands.goToTier(elevator, 2));
-    fightBox.button(6).onTrue(ElevatorCommands.goToTier(elevator, 3));
-    fightBox.button(5).onTrue(ElevatorCommands.goToTier(elevator, 4));
-    fightBox.button(7).onTrue(IntakeCommands.spitOut(intake, true));
-    fightBox.button(8).onTrue(IntakeCommands.suckAndHold(intake));
-    fightBox.button(9).onTrue(MultiCommands.startUpAngles(intake, elevator, shoulder));
+    fightBox.button(7).toggleOnTrue(MultiCommands.safeMode(elevator, shoulder));
+
+    fightBox
+        .button(4)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        bottomleftred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(150))))));
+    fightBox
+        .button(6)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        middleleftred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(90))))));
+    fightBox
+        .button(5)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        topleftred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(30))))));
+    fightBox
+        .button(2)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        bottomrightred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(-150))))));
+    fightBox
+        .axisGreaterThan(3, 0.6)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        middlerightred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(-90))))));
+    fightBox
+        .axisGreaterThan(2, 0.6)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        toprightred,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(-30))))));
+
     fightBox
         .button(10)
         .onTrue(
@@ -290,16 +368,21 @@ public class RobotContainer {
                         dEntry.getDouble(ElevatorConstants.kShoulderGains[2]),
                         fEntry.getDouble(ElevatorConstants.kShoulderGains[3])),
                 shoulder));
-    fightBox.pov(0).onTrue(ShoulderCommands.place(shoulder));
-    fightBox.pov(90).onTrue(ShoulderCommands.moveShoulderTo(shoulder, 0.75));
-    controller.button(7).whileTrue(MultiCommands.killAllComands(intake, elevator, shoulder));
-    fightBox.button(2).onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.72)));
     fightBox
-        .axisGreaterThan(3, 0.6)
-        .onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.75)));
-    fightBox
-        .axisGreaterThan(2, 0.6)
-        .onTrue(new InstantCommand(() -> shoulder.setShoulderAngleForHandoff(0.78)));
+        .pov(90)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        redHumanStation1,
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(-126))))));
+
+    fightBox.pov(0).onTrue(ElevatorCommands.goToTier(elevator, 2));
+    fightBox.button(1).onTrue(ElevatorCommands.goToTier(elevator, 3));
+    fightBox.button(3).onTrue(ElevatorCommands.goToTier(elevator, 4));
+
     controller
         .pov(270)
         .toggleOnTrue( // Drive slower when the right trigger and leftBumper are held.
@@ -309,22 +392,6 @@ public class RobotContainer {
                 () -> -controller.getLeftX() / 3,
                 () -> -controller.getRightX() / 3))
         .onTrue(ShoulderCommands.foldIn(shoulder));
-
-    controller
-        .pov(0)
-        .whileTrue(
-            new AlignToCoral(
-                drive, vision, 2, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-    controller
-        .pov(180)
-        .onTrue(new AlignToReef(drive, vision))
-        .onFalse(new DontAlignToReef(drive, vision))
-        .onFalse(
-            DriveCommands.joystickDrive(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> -controller.getRightX()));
 
     controller
         .pov(90)
@@ -338,13 +405,7 @@ public class RobotContainer {
 
     controller
         .rightBumper()
-        .onTrue(
-            MultiCommands.handOff(
-                intake, elevator, shoulder, shoulder::getShoulderAngleForHandoff));
-    controller.leftBumper().onTrue(IntakeCommands.intakeCoralAndStow(intake));
-
-    controller.x().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(-0.3), intake));
-    controller.b().whileTrue(Commands.run(() -> intake.adjustRotatorAngle(0.3), intake));
+        .onTrue(MultiCommands.handOff(elevator, shoulder, shoulder::getShoulderAngleForHandoff));
 
     controller.y().whileTrue(Commands.run(() -> elevator.adjustRHeight(0.5), elevator));
     controller.a().whileTrue(Commands.run(() -> elevator.adjustRHeight(-0.5), elevator));
@@ -365,6 +426,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.sequence(autoChooser.get(), IntakeCommands.scoreL1(intake));
+    return Commands.sequence(autoChooser.get());
   }
 }

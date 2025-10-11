@@ -69,7 +69,6 @@ public class Drive extends SubsystemBase {
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-
   // PathPlanner config constants
   private static final double ROBOT_MASS_KG = 52; // 115 lbs
   private static final double ROBOT_MOI = 6.883;
