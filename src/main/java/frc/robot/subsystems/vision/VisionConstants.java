@@ -22,7 +22,7 @@ import org.photonvision.PhotonCamera;
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFields.k2025ReefscapeAndyMark.loadAprilTagLayoutField();
 
   // Camera names, must match names configured on coprocessor
   public static String camera1Name = "limelight-one";

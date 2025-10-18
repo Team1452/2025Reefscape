@@ -28,6 +28,7 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
@@ -37,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MultiCommands;
+import frc.robot.commands.ShoulderCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -255,7 +257,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createBottomLeftRedWaypoints(),
+                        createBottomLeftWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(150))))));
@@ -265,7 +267,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createMiddleLeftRedWaypoints(),
+                        createMiddleLeftWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(90))))));
@@ -275,7 +277,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createTopLeftRedWaypoints(),
+                        createTopLeftWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(30))))));
@@ -285,7 +287,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createBottomLeftRedWaypoints(),
+                        createBottomLeftWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-150))))));
@@ -295,7 +297,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createBottomRightRedWaypoints(),
+                        createBottomRightWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-90))))));
@@ -305,7 +307,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        createTopRightRedWaypoints(),
+                        createTopRightWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-30))))));
@@ -321,6 +323,30 @@ public class RobotContainer {
                         dEntry.getDouble(ElevatorConstants.kShoulderGains[2]),
                         fEntry.getDouble(ElevatorConstants.kShoulderGains[3])),
                 shoulder));
+
+    fightBox
+        .pov(270)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        createTopStation(),
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))))));
+
+    fightBox
+        .pov(90)
+        .onTrue(
+            Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        createBottomStation(),
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))))));
+
+    fightBox.pov(180).onTrue(Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()));
 
     fightBox.pov(0).onTrue(ElevatorCommands.goToTier(elevator, 2));
     fightBox.button(1).onTrue(ElevatorCommands.goToTier(elevator, 3));
@@ -342,6 +368,9 @@ public class RobotContainer {
 
     controller.y().whileTrue(Commands.run(() -> elevator.adjustRHeight(0.5), elevator));
     controller.a().whileTrue(Commands.run(() -> elevator.adjustRHeight(-0.5), elevator));
+
+    controller.x().onTrue(ShoulderCommands.place(shoulder));
+
     controller
         .rightTrigger(0.1)
         .whileTrue(
@@ -359,37 +388,93 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.sequence(autoChooser.get());
+    return Commands.sequence(
+        autoChooser.get(),
+        ElevatorCommands.goToTier(elevator, 4),
+        ShoulderCommands.place(shoulder));
   }
 
-  public List<Waypoint> createTopRightRedWaypoints() {
+  public List<Waypoint> createTopRightWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(0)));
   }
 
-  public List<Waypoint> createMiddleRightRedWaypoints() {
+  public List<Waypoint> createMiddleRightWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(5.902, 4.018, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(5.772, 4.018, Rotation2d.fromDegrees(0)));
   }
 
-  public List<Waypoint> createBottomRightRedWaypoints() {
+  public List<Waypoint> createBottomRightWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(5.167, 2.879, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(5.167, 2.9, Rotation2d.fromDegrees(0)));
   }
 
-  public List<Waypoint> createTopLeftRedWaypoints() {
+  public List<Waypoint> createTopLeftWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(0)));
   }
 
-  public List<Waypoint> createMiddleLeftRedWaypoints() {
+  public List<Waypoint> createMiddleLeftWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(3.164, 4, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(3.164, 4, Rotation2d.fromDegrees(0)));
   }
 
-  public List<Waypoint> createBottomLeftRedWaypoints() {
+  public List<Waypoint> createBottomLeftWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
-        drive.getPose(), new Pose2d(3.182, 2.876, Rotation2d.fromDegrees(0)));
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(3.801, 2.9, Rotation2d.fromDegrees(0)));
   }
+
+  public List<Waypoint> createBottomStation() {
+    return PathPlannerPath.waypointsFromPoses(
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(1.198, 7, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createTopStation() {
+    return PathPlannerPath.waypointsFromPoses(
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(1.113, 1, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createTopRightWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(0)),
+        new Pose2d(5.280, 5.079, Rotation2d.fromDegrees(0)));
+  }
+
+  /*
+
+  public List<Waypoint> createMiddleRightWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(5.902, 4.018, Rotation2d.fromDegrees(0)), new Pose2d(5.798, 3.853, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createBottomRightWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(5.167, 2.879, Rotation2d.fromDegrees(0)), new Pose2d(5, 2.798, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createTopLeftWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(0)), new Pose2d(3.973, 5.234, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createMiddleLeftWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.164, 4, Rotation2d.fromDegrees(0)), new Pose2d(3.116, 3.3860, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createBottomLeftWaypointsLeft() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.182, 2.876, Rotation2d.fromDegrees(0)), new Pose2d(3.708, 2.971, Rotation2d.fromDegrees(0)));
+  }
+
+  */
 
 }

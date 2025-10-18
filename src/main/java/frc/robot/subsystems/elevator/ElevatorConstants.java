@@ -12,7 +12,7 @@ public class ElevatorConstants {
   // Handoff height is also the minimum height that the elevator can be at when the shoulder is down
   // and the intake is in.
   public static final double scoringAngle =
-      0.37; // In rotations of the shoulder, this is the angle that the shoulder should be at when
+      0.5; // In rotations of the shoulder, this is the angle that the shoulder should be at when
   // scoring.
   public static final double[] kElevatorGains = {
     0.2, // P
