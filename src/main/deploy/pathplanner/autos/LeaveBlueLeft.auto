@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RightPathBlue"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ScoreL1"
+            "pathName": "LeftPathBlue"
           }
         }
       ]
