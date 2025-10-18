@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -25,6 +26,7 @@ public class Elevator extends SubsystemBase {
     Logger.processInputs("Elevator", inputs);
     Logger.recordOutput("Elevator/ElevatorRHeight", elevatorRHeight);
     Logger.recordOutput("Elevator/ElevatorHeight", inputs.height);
+    Commands.sequence(Commands.print(Double.toString(getHeight())));
   }
 
   public boolean nearRPosition() {
@@ -41,10 +43,12 @@ public class Elevator extends SubsystemBase {
 
   public void adjustRHeight(double height) {
     elevatorRHeight += height;
+    System.out.println(getHeight());
   }
 
   public void setRHeight(double height) {
     elevatorRHeight = height;
+    System.out.println(getRHeight());
   }
 
   public void resetEncoder() {

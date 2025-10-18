@@ -37,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MultiCommands;
-import frc.robot.commands.ShoulderCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -234,52 +233,6 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
 
-    // on the fly path generation
-    List<Waypoint> toprightred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(13.743, 5.145, Rotation2d.fromDegrees(-30)));
-    List<Waypoint> middlerightred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(14.384, 4.075, Rotation2d.fromDegrees(-90)));
-    List<Waypoint> bottomrightred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(13.700, 2.887, Rotation2d.fromDegrees(-150)));
-    List<Waypoint> bottomleftred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(12.428, 2.900, Rotation2d.fromDegrees(150)));
-    List<Waypoint> middleleftred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(11.737, 4, Rotation2d.fromDegrees(90)));
-    List<Waypoint> topleftred =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(12.421, 5.182, Rotation2d.fromDegrees(30)));
-
-    List<Waypoint> toprightblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(-30)));
-    List<Waypoint> middlerightblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(5.902, 4.018, Rotation2d.fromDegrees(-90)));
-    List<Waypoint> bottomrightblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(5.167, 2.879, Rotation2d.fromDegrees(-150)));
-    List<Waypoint> bottomleftblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(3.182, 2.876, Rotation2d.fromDegrees(150)));
-    List<Waypoint> middleleftblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(3.164, 4, Rotation2d.fromDegrees(90)));
-    List<Waypoint> topleftblue =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(30)));
-
-    List<Waypoint> redHumanStation1 =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(16.304, 7.042, Rotation2d.fromDegrees(-126)));
-    List<Waypoint> redHumanStation2 =
-        PathPlannerPath.waypointsFromPoses(
-            drive.getPose(), new Pose2d(16.425, 1.042, Rotation2d.fromDegrees(26)));
-
     PathConstraints constraints =
         new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
     // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use
@@ -302,7 +255,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        bottomleftred,
+                        createBottomLeftRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(150))))));
@@ -312,7 +265,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        middleleftred,
+                        createMiddleLeftRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(90))))));
@@ -322,7 +275,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        topleftred,
+                        createTopLeftRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(30))))));
@@ -332,7 +285,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        bottomrightred,
+                        createBottomLeftRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-150))))));
@@ -342,7 +295,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        middlerightred,
+                        createBottomRightRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-90))))));
@@ -352,7 +305,7 @@ public class RobotContainer {
             Commands.sequence(
                 AutoBuilder.followPath(
                     new PathPlannerPath(
-                        toprightred,
+                        createTopRightRedWaypoints(),
                         constraints,
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(-30))))));
@@ -368,30 +321,10 @@ public class RobotContainer {
                         dEntry.getDouble(ElevatorConstants.kShoulderGains[2]),
                         fEntry.getDouble(ElevatorConstants.kShoulderGains[3])),
                 shoulder));
-    fightBox
-        .pov(90)
-        .onTrue(
-            Commands.sequence(
-                AutoBuilder.followPath(
-                    new PathPlannerPath(
-                        redHumanStation1,
-                        constraints,
-                        null,
-                        new GoalEndState(0.0, Rotation2d.fromDegrees(-126))))));
 
     fightBox.pov(0).onTrue(ElevatorCommands.goToTier(elevator, 2));
     fightBox.button(1).onTrue(ElevatorCommands.goToTier(elevator, 3));
     fightBox.button(3).onTrue(ElevatorCommands.goToTier(elevator, 4));
-
-    controller
-        .pov(270)
-        .toggleOnTrue( // Drive slower when the right trigger and leftBumper are held.
-            DriveCommands.joystickDrive(
-                drive,
-                () -> -controller.getLeftY() / 3,
-                () -> -controller.getLeftX() / 3,
-                () -> -controller.getRightX() / 3))
-        .onTrue(ShoulderCommands.foldIn(shoulder));
 
     controller
         .pov(90)
@@ -428,4 +361,35 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return Commands.sequence(autoChooser.get());
   }
+
+  public List<Waypoint> createTopRightRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(5.165, 5.165, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createMiddleRightRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(5.902, 4.018, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createBottomRightRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(5.167, 2.879, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createTopLeftRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.819, 5.182, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createMiddleLeftRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.164, 4, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createBottomLeftRedWaypoints() {
+    return PathPlannerPath.waypointsFromPoses(
+        drive.getPose(), new Pose2d(3.182, 2.876, Rotation2d.fromDegrees(0)));
+  }
+
 }
