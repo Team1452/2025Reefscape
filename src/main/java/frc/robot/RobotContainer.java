@@ -403,13 +403,13 @@ public class RobotContainer {
   public List<Waypoint> createMiddleRightWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
         new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
-        new Pose2d(5.772, 4.018, Rotation2d.fromDegrees(0)));
+        new Pose2d(5.8, 4.0, Rotation2d.fromDegrees(0)));
   }
 
   public List<Waypoint> createBottomRightWaypoints() {
     return PathPlannerPath.waypointsFromPoses(
         new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
-        new Pose2d(5.167, 2.9, Rotation2d.fromDegrees(0)));
+        new Pose2d(5.131, 2.887, Rotation2d.fromDegrees(0)));
   }
 
   public List<Waypoint> createTopLeftWaypoints() {
